@@ -1,0 +1,15 @@
+inputs:
+  syslog: # each input must have a type, the type can be anything.
+  - /var/log/messages
+  - /var/log/syslog
+  # Wildcards work.
+  - /var/log/*.log
+  apache-access:
+  - /var/log/apache2/access.log
+  apache-error:
+  - /var/log/apache2/error.log
+
+outputs:
+- stdout:///   # output events to stdout for debugging, remove if you don't want
+- amqp://localhost/fanout/rawlogs   # ship logs to the 'rawlogs' fanout queue.
+

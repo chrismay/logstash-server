@@ -1,0 +1,30 @@
+inputs:
+  all: # for now, you must specify a type for all inputs
+  - amqp://localhost/fanout/rawlogs   # ship logs to the 'rawlogs' fanout queue.
+filters:
+- grok:
+    syslog: # for logs of type 'linux-syslog'
+      patterns:
+      - %{SYSLOGLINE}
+    apache-access: # for logs of type 'apache-error'
+      patterns:
+      - %{COMBINEDAPACHELOG}
+    nagios:
+      patterns:
+      - %{NAGIOSLOGLINE}
+- date:
+    syslog:  # for logs of type 'linux-syslog'
+      # Look for a field 'timestamp' with this format, parse and it for the timestamp
+      # This field comes from the SYSLOGLINE pattern
+      timestamp: "%b %d %H:%M:%S"
+      timestamp8601: ISO8601
+    apache-access:
+      timestamp: "%d/%b/%Y:%H:%M:%S %Z"
+    nagios:
+      # nagios uses unix epoch time in seconds, so parse it
+      epochtime: %s
+outputs:
+- stdout:///
+# This elasticsearch 'river' configuration requires you to install the
+# 'river-rabbitmq' plugin. See the Configuration page here for how to do this.
+- "elasticsearch://localhost:9200/logstash/all_river?method=river&type=rabbitmq&host=localhost&user=guest&pass=guest&vhost=/&queue=es"
